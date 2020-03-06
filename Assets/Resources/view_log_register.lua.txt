@@ -1,0 +1,168 @@
+﻿
+print("view_log_register")
+
+Awake = function()
+	print('Awake')
+	
+	panel_registerMove=false
+
+--log_registerPanel
+	registerPanel = this.transform:FindChild("log_registerPanel")
+
+--loginView
+	input_username = this.transform:FindChild("log_registerPanel/loginView/input_username"):GetComponent("InputField")
+
+	input_password = this.transform:FindChild("log_registerPanel/loginView/input_password"):GetComponent("InputField")
+
+	tog_remember = this.transform:FindChild("log_registerPanel/loginView/tog_remember"):GetComponent("Toggle")
+
+	btn_login = this.transform:FindChild("log_registerPanel/loginView/btn_login"):GetComponent("Button")
+
+	btn_register = this.transform:FindChild("log_registerPanel/loginView/btn_register"):GetComponent("Button")
+
+	text_warning = this.transform:FindChild("log_registerPanel/loginView/text_warning"):GetComponent("Text")
+
+--registerView
+	input_username_reg = this.transform:FindChild("log_registerPanel/registerView/input_username"):GetComponent("InputField")
+	
+	input_password_reg = this.transform:FindChild("log_registerPanel/registerView/input_password"):GetComponent("InputField")
+	
+	input_password_reg_repeat = this.transform:FindChild("log_registerPanel/registerView/input_password_repeat"):GetComponent("InputField")
+
+	btn_register_reg = this.transform:FindChild("log_registerPanel/registerView/btn_register"):GetComponent("Button")
+
+	btn_moveToLogin = this.transform:FindChild("log_registerPanel/registerView/btn_cancel"):GetComponent("Button")
+
+	text_warning_reg = this.transform:FindChild("log_registerPanel/registerView/text_warning"):GetComponent("Text")
+
+
+	text_warning.text = ""
+	text_warning_reg.text = ""
+
+	btn_login.interactable = false;
+
+	input_password.onValueChanged:AddListener(onValueChanged_password)
+	input_username.onValueChanged:AddListener(onValueChanged_username)
+
+	btn_login.onClick:AddListener(onClick_login)
+	btn_register.onClick:AddListener(onClick_moveToRegister)
+	btn_moveToLogin.onClick:AddListener(onClick_moveToLogin)
+	btn_register_reg.onClick:AddListener(onClick_register_reg)
+	UpdateView()
+end
+
+Start = function()
+	print('Start')
+end
+
+Update = function()
+	print('Update')
+
+	panelMove(panel_registerMove)
+
+end
+
+Destroy = function()
+	print('Destroy')
+	CS.PlayerAccountInfo.Instance:SaveInfo()
+end
+
+
+UpdateView = function()
+	if CS.PlayerAccountInfo.Instance.CurUsername and CS.PlayerAccountInfo.Instance.CurPassword then
+		input_username.text = CS.PlayerAccountInfo.Instance.CurUsername
+		input_password.text = CS.PlayerAccountInfo.Instance.CurPassword
+	end
+
+	if (input_username.text ~= "") and (input_password.text ~= "") then
+		btn_login.interactable = true
+	else
+		btn_login.interactable = false
+	end
+
+end
+
+onValueChanged_username = function()
+	if (input_username.text ~= "") and (input_password.text ~= "") then
+		btn_login.interactable = true
+	else
+		btn_login.interactable = false
+	end
+end
+
+onValueChanged_password = function()
+	if (input_username.text ~= "") and (input_password.text ~= "") then
+		btn_login.interactable = true
+	else
+		btn_login.interactable = false
+	end
+end
+
+onClick_login = function()
+	if CS.Controller.Instance:CheckAccountInfo(input_username.text,input_password.text) then
+		if tog_remember.isOn then
+			CS.Controller.Instance:SaveCurAccountInfo(input_username.text,input_password.text)
+		end
+		print('right')
+	else
+		text_warning.text = "帐号信息错误!"
+		input_username.text = ""
+		input_password.text = "" 
+	end
+end
+
+onClick_moveToRegister = function()
+	panel_registerMove = true
+	removeInfo_register()
+end
+
+onClick_moveToLogin = function()
+	panel_registerMove = false
+	removeInfo_login()
+end
+
+onClick_register_reg = function()
+	if input_username_reg.text == "" or input_password_reg.text == "" or input_password_reg_repeat.text == "" then
+		text_warning_reg.text = "请输入完整信息！";
+	else
+		if CS.Controller.Instance:CheckAccountExist(input_username_reg.text) then
+			text_warning_reg.text = "该用户名已被使用过！"
+			removeInfo_register()
+		else
+			if input_password_reg.text ~= input_password_reg_repeat.text then
+				text_warning_reg.text = "密码不一致，请重新输入"
+				input_username_reg.text = ""
+				input_password_reg.text = ""
+				input_password_reg_repeat.text = ""
+			else
+				CS.Controller.Instance:AccountRegister(input_username_reg.text,input_password_reg.text)
+				text_warning_reg.text = "注册成功！"
+			end
+		end
+	end	
+end
+
+panelMove = function(b)
+	if b then
+		print('register move')
+		registerPanel.localPosition = CS.UnityEngine.Vector3.Slerp(registerPanel.localPosition,CS.UnityEngine.Vector3(-300,0,0),0.1)
+	else
+		print('login move')
+		registerPanel.localPosition = CS.UnityEngine.Vector3.Slerp(registerPanel.localPosition,CS.UnityEngine.Vector3(0,0,0),0.1)
+	end
+	--((CS.UnityEngine.RectTransform)registerPanel).localPosition = CS.UnityEngine.Vector3.Slerp(registerPanel.localPosition,new CS.UnityEngine.Vector3(-300,0,0),0.1)
+	--print('panelMove')
+end
+
+removeInfo_login = function()
+	input_username.text = ""
+	input_password.text = ""
+end
+
+removeInfo_register =function()
+	input_username_reg.text = ""
+	input_password_reg.text = ""
+	input_password_reg_repeat.text = ""
+	text_warning_reg.text = ""
+end
+

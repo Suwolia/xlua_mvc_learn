@@ -1,0 +1,59 @@
+﻿
+print("view_background")
+
+Awake = function()
+	print('Awake___')
+	backgroundPanel = this.transform:FindChild("backgroundPanel")
+	print(backgroundPanel)
+	temp_x = backgroundPanel.localPosition.x
+end
+
+Start = function()
+	print('Start___')
+end
+
+Update = function()
+	print('Update___')
+	backgroundChange_timeInterval()
+end
+
+Destroy = function()
+	print('Destroy___')
+end
+
+backgroundChange = function(temp_x)
+	backgroundPanel.localPosition = CS.UnityEngine.Vector3.MoveTowards(backgroundPanel.localPosition,CS.UnityEngine.Vector3(temp_x,0,0),this.maxDeltaDis)
+end
+
+backgroundChange_timeInterval = function()
+	if this.curTime > this.timeInterval then
+		backgroundChange(temp_x)
+		if backgroundPanel.localPosition.x == 2880 then
+			temp_x = 960
+			this.curTime = 0
+		elseif backgroundPanel.localPosition.x == 960 then
+			temp_x = -960
+			this.curTime = 0
+		elseif backgroundPanel.localPosition.x == -960 then
+			temp_x = -2880
+			this.curTime = 0
+		elseif backgroundPanel.localPosition.x == -2880 then
+			temp_x = 2880
+			this.curTime = 0
+		end
+	else
+		this.curTime = this.curTime + CS.UnityEngine.Time.deltaTime
+	end
+end
+
+
+
+
+
+
+
+
+
+
+
+

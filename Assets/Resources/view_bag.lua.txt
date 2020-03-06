@@ -1,0 +1,177 @@
+﻿
+print("view_bag")
+
+Awake = function()
+
+	curView = 1
+
+	weaponViewOn = true
+	bowViewOn = false
+	shieldViewOn = false
+
+	print('Awake___')
+	grids_weapon_before = CS.UnityEngine.GameObject.FindGameObjectsWithTag("grid_weapon")
+	grids_bow_before = CS.UnityEngine.GameObject.FindGameObjectsWithTag("grid_bow")
+	grids_shield_before = CS.UnityEngine.GameObject.FindGameObjectsWithTag("grid_shield")
+
+	grids_weapon = CS.Controller.Instance:arrangeGameObjects(grids_weapon_before)
+	grids_bow = CS.Controller.Instance:arrangeGameObjects(grids_bow_before)
+	grids_shield = CS.Controller.Instance:arrangeGameObjects(grids_shield_before)
+
+	for i=0,grids_weapon.Length do
+		grids_weapon[i].transform:GetComponent("Toggle").onValueChanged.AddListener(onValueChanged)
+	end
+
+	text_item_name = this.transform:FindChild("bagItemInfoView/text_item_name"):GetComponent("Text")
+	text_atk = this.transform:FindChild("bagItemInfoView/text_atk"):GetComponent("Text")
+	text_defend = this.transform:FindChild("bagItemInfoView/text_defend"):GetComponent("Text")
+	text_itemInfo = this.transform:FindChild("bagItemInfoView/text_itemInfo"):GetComponent("Text")
+
+	btn_weapon = this.transform:FindChild("btn_group/btn_weapon"):GetComponent("Button")
+	btn_bow = this.transform:FindChild("btn_group/btn_bow"):GetComponent("Button")
+	btn_shield = this.transform:FindChild("btn_group/btn_shield"):GetComponent("Button")
+
+	bagViewPanel = this.transform:FindChild("bagView/bagViewPanel")
+
+	btn_weapon.onClick:AddListener(onClick_btn_weapon)
+	btn_bow.onClick:AddListener(onClick_btn_bow)
+	btn_shield.onClick:AddListener(onClick_btn_shield)
+
+	updateView()
+end
+
+Start = function()
+	print('Start___')
+end
+
+Update = function()
+	print('Update___')
+	moveToWeaponView()
+	moveToBowView()
+	moveToShieldView()
+end
+
+Destroy = function()
+	CS.PlayerItemModel.Instance:SaveInfo()
+	print('Destroy___')
+end
+
+updateView = function()
+--grids_weapon
+	for i=0,grids_weapon.Length-1 do
+		grids_weapon[i].transform:FindChild("itemView"):GetComponent("Image").enabled = false
+	end
+	for i=0,CS.PlayerItemModel.Instance.list_weapon.Count-1 do
+		grids_weapon[i].transform:FindChild("itemView"):GetComponent("Image").enabled = true
+		CS.Controller.Instance:updateItem_weapon(grids_weapon[i],CS.PlayerItemModel.Instance.list_weapon[i])
+	end
+--grids_bow
+	for i=0,grids_bow.Length-1 do
+		grids_bow[i].transform:FindChild("itemView"):GetComponent("Image").enabled = false
+	end
+	for i=0,CS.PlayerItemModel.Instance.list_bow.Count-1 do
+		grids_bow[i].transform:FindChild("itemView"):GetComponent("Image").enabled = true
+		CS.Controller.Instance:updateItem_bow(grids_bow[i],CS.PlayerItemModel.Instance.list_bow[i])
+	end
+--grids_shield
+	for i=0,grids_shield.Length-1 do
+		grids_shield[i].transform:FindChild("itemView"):GetComponent("Image").enabled = false
+	end
+	for i=0,CS.PlayerItemModel.Instance.list_shield.Count-1 do
+		grids_shield[i].transform:FindChild("itemView"):GetComponent("Image").enabled = true
+		CS.Controller.Instance:updateItem_shield(grids_shield[i],CS.PlayerItemModel.Instance.list_shield[i])
+	end
+
+	text_item_name.text = ""
+	text_atk.text = ""
+	text_defend.text = ""
+	text_itemInfo.text = ""
+end
+
+onValueChanged = function()
+	_index = lookForIsOnTog()
+	if curView == 1 then
+		updateInfoView(CS.PlayerItemModel.Instance.list_weapon[_index])
+	elseif curView == 2 then
+		updateInfoView(CS.PlayerItemModel.Instance.list_bow[_index])
+	elseif curView == 3 then
+		updateInfoView(CS.PlayerItemModel.Instance.list_shield[_index])
+	end
+end
+
+updateInfoView = function(item)
+	text_item_name.text = ""
+	text_atk.text = ""
+	text_defend.text = ""
+	text_itemInfo.text = ""
+
+	text_item_name.text = item.ItemName
+	text_atk.text = Atk:ToString()
+	text_defend.text = Defend:ToString()
+	text_itemInfo.text = ItemInfo
+end
+
+lookForIsOnTog = function()
+	for i=0,grids_weapon.Length-1 do
+		if grids_weapon[i].transform:GetComponent("Toggle").isOn then
+			return i
+		end
+	end
+	return nil
+end
+
+moveToWeaponView = function()
+	if weaponViewOn then
+		btn_weapon.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,1)
+		bagViewPanel.localPosition = CS.UnityEngine.Vector3.Lerp(bagViewPanel.localPosition,CS.UnityEngine.Vector3(750,bagViewPanel.localPosition.y,0),0.1)
+		btn_bow.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+		btn_shield.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+	end
+end
+
+moveToBowView = function()
+	if bowViewOn then
+		btn_bow.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,1)
+		bagViewPanel.localPosition = CS.UnityEngine.Vector3.Lerp(bagViewPanel.localPosition,CS.UnityEngine.Vector3(0,bagViewPanel.localPosition.y,0),0.1)
+		btn_weapon.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+		btn_shield.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+	end
+end
+
+moveToShieldView = function()
+	if shieldViewOn then
+		btn_shield.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,1)
+		bagViewPanel.localPosition = CS.UnityEngine.Vector3.Lerp(bagViewPanel.localPosition,CS.UnityEngine.Vector3(-750,bagViewPanel.localPosition.y,0),0.1)
+		btn_weapon.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+		btn_bow.gameObject.transform:GetComponent("Image").color = CS.UnityEngine.Color(1,1,1,0.4)
+	end
+end
+
+onClick_btn_weapon = function()
+	weaponViewOn = true
+	bowViewOn = false
+	shieldViewOn =false
+	curView = 1
+end
+
+onClick_btn_bow = function()
+	weaponViewOn = false
+	bowViewOn = true
+	shieldViewOn =false
+	curView = 2
+end
+
+onClick_btn_shield = function()
+	weaponViewOn = false
+	bowViewOn = false
+	shieldViewOn =true
+	curView = 3
+end
+
+
+
+
+
+
+
+
